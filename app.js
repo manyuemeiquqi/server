@@ -112,7 +112,9 @@ server.on("request", async (req, res) => {
     } else {
       let list = [];
       if (fse.existsSync(path.resolve(UPLOAD_DIR, `${fileName}-chunks`))) {
-        list = await fse.readdir(path.resolve(UPLOAD_DIR, `${fileName}-chunks`));
+        list = await fse.readdir(
+          path.resolve(UPLOAD_DIR, `${fileName}-chunks`)
+        );
       }
       res.end(
         JSON.stringify({
@@ -121,6 +123,27 @@ server.on("request", async (req, res) => {
         })
       );
     }
+  }
+  const filePath = './ddd.html'
+  if (req.url === "/download") {
+    // res.setHeader("Content-Disposition", 'attachment; filename="list.txt"');
+    // res.end("name:manyuemeiquqi");
+
+    const range = req.headers["range"];
+    console.log('range: ', range);
+    const [start, end] = range.split("=")[1].split('-').map((item) => +item);
+    console.log('start, end: ', start, end);
+    res.statusCode = 206;
+    fse.createReadStream(filePath, {
+      start,
+      end,
+    }).pipe(res)
+
+  }
+  if (req.url === "/downLength") {
+    const fileLength = fse.statSync(filePath).size;
+    console.log('filePath: ', filePath);
+    res.end(fileLength + "");
   }
 });
 server.listen(3000, () => {
